@@ -14,13 +14,13 @@ public class ServiceTest {
     @Resource
     MailService mailService;
 
-    @Test
-    public void sayHelloTest(){
-        mailService.sayhello();
-    }
+//    @Test
+//    public void sayHelloTest(){
+//        mailService.sayhello();
+//    }
 
     @Test
     public void sendSimplemailTest(){
-        mailService.sendSimpleMail("1574024261@qq.com","hello", "hello");
+
     }
 }

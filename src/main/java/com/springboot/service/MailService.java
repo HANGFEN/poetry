@@ -1,5 +1,9 @@
 package com.springboot.service;
 
+import com.springboot.utils.RandomCheckNumberUtil;
+import com.springboot.utils.VerifyCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -15,22 +19,30 @@ public class MailService {
 
     @Autowired()
     private JavaMailSender mailSender;
+    private RandomCheckNumberUtil checkNumber = new RandomCheckNumberUtil();
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public void sayhello(){
-        System.out.print("hello");
-    }
 
-    public void sendSimpleMail(String to,String subject,
-                               String content){
+    public String sendSimpleMail(String to){
         SimpleMailMessage message = new SimpleMailMessage();
         //发件人
         message.setFrom(from);
         //发送给谁
         message.setTo(to);
         //设置主题
-        message.setSubject(subject);
+        message.setSubject("changePassword");
         //设置内容
-        message.setText(content);
-        mailSender.send(message);
+        String check = checkNumber.getNonce_str();
+
+        message.setText(check + "\n" + "localhost:8080/setNewPassword");
+        try {
+            mailSender.send(message);
+            logger.info("邮件已发送。");
+        } catch (Exception e) {
+            logger.error("发送邮件时发生异常了！",e);
+        }
+        return check;
     }
+
+
 }

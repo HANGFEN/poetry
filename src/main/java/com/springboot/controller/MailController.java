@@ -1,67 +1,58 @@
 package com.springboot.controller;
 
-import org.slf4j.Logger;
-
-import org.slf4j.LoggerFactory;
+import com.springboot.entity.TUser;
+import com.springboot.imp.UserImp;
+import com.springboot.service.MailService;
+import com.springboot.utils.VerifyCode;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.springframework.mail.SimpleMailMessage;
-
-import org.springframework.mail.javamail.JavaMailSender;
-
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 
 
 @RestController
-
-@RequestMapping("/mail")
-
 public class MailController {
-
-
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-
-
     @Autowired
+    private UserImp userImp;
+    @Autowired
+    private MailService mailService;
+    public VerifyCode verifyCode = new VerifyCode();
+    private TUser persistUser;
+    @RequestMapping("/changePassword")
+    public String changePassword(@RequestParam("to_") String to_,@RequestParam("username") String username){
 
-    private JavaMailSender mailSender;
-
-
-
-    @RequestMapping("/send")
-
-    public void sendMail(){
-
-        SimpleMailMessage message = new SimpleMailMessage();
-
-        message.setFrom("dhfpersonalmail@163.com");
-
-        message.setTo("764013105@qq.com");
-
-        message.setSubject("it is a test for spring boot");
-
-        message.setText("Dear zxc, welcome to oxford.");
-
-
-
-        try {
-
-            mailSender.send(message);
-
-            logger.info("小黄的测试邮件已发送。");
-
-        } catch (Exception e) {
-
-            logger.error("小黄发送邮件时发生异常了！", e);
-
+        if(to_ != null){
+            List<TUser> userList =  userImp.findEmail(to_);
+            for (TUser tuser : userList){
+                if(tuser.getEmail().equals(to_)){
+                    verifyCode.setCheck(mailService.sendSimpleMail(to_));
+                    persistUser = tuser;
+                }
+            }
+            //verifyCode.setCheck(mailService.sendSimpleMail(to_));
+            //verifyCode.getCheck();
+            return "200";
         }
-
+        else{
+            return "changePassword";
+        }
     }
+    @RequestMapping("/setNewPassword")
+    public String setNewPassword(@RequestParam("check")String check,@RequestParam("newPassword")String newPassword){
+        if(verifyCode.getCheck().equals(check)){
+            persistUser.setPassword(newPassword);
+            userImp.modifyUser(persistUser);
+            return "200";
+        }
+        else {
+            return "setNewPassword";
+        }
+    }
+
 
 }
